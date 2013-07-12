@@ -1,4 +1,8 @@
-﻿using System;
+﻿/*
+ * Testing Git 
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,6 +16,7 @@ namespace brainfucksharp
         int instructionpointer;
         public Byte[] Memory;
         public string Program;
+        Boolean Halted;
 
         public Interpreter(String program)
         {
@@ -19,33 +24,37 @@ namespace brainfucksharp
             instructionpointer = 0;
             Memory = new Byte[30000];
             Program = program;
+            Halted = false;
             Run();
         }
 
-        public void Run()
+        void Run()
         {
-            while(true)
+            while(!Halted)
             {
                 char op;
 
                 if (instructionpointer >= Program.Length)
-                    op = '0';
+                {
+                    Halted = true;
+                    continue;
+                }
                 else
-                    op = Program.ToCharArray()[instructionpointer];
+                    op = Program[instructionpointer];
 
                 Step(op);
             }
         }
 
-        public void Step(Char c)
+        void Step(Char c)
         {
             switch (c)
             {
                 case '>':
-                    stackpointer++;
+                    ++stackpointer;
                     break;
                 case '<':
-                    stackpointer--;
+                    --stackpointer;
                     break;
                 case '+':
                     Memory[stackpointer]++;
@@ -60,12 +69,12 @@ namespace brainfucksharp
                     Memory[stackpointer] = (Byte)Console.ReadKey().KeyChar;
                     break;
                 case '[':
-                    if(Memory[stackpointer] == 0)
-                        instructionpointer = findnext();
+                    if (Memory[stackpointer] == 0)
+                        instructionpointer = FindMatchingClose();
                     break;
                 case ']':
-                    if(Memory[stackpointer] != 0)
-                        instructionpointer = findprev();
+                    if (Memory[stackpointer] != 0)
+                        instructionpointer = FindMatchingOpen();
                     break;
                 default:
                     break;
@@ -74,35 +83,48 @@ namespace brainfucksharp
             instructionpointer++;
         }
 
-        public void Halt()
+        int FindMatchingClose()
         {
-            while (true) ;
-        }
+            int i = instructionpointer + 1;
+            int count = 1;
 
-        public int findnext()
-        {
-            int i = instructionpointer;
-            char[] p = Program.ToCharArray();
-
-            while (p[i] != ']')
+            while (count > 0)
             {
+                if (Program[i] == ']')
+                {
+                    count--;
+                }
+                else if (Program[i] == '[')
+                {
+                    count++;
+                }
+
                 i++;
             }
-
-            return i;
+            
+            return i - 1;
         }
 
-        public int findprev()
+        int FindMatchingOpen()
         {
-            int i = instructionpointer;
-            char[] p = Program.ToCharArray();
+            int i = instructionpointer - 1;
+            int count = 1;
 
-            while (p[i] != '[')
+            while (count > 0)
             {
+                if (Program[i] == ']')
+                {
+                    count++;
+                }
+                else if (Program[i] == '[')
+                {
+                    count--;
+                }
+
                 i--;
             }
 
-            return i;
+            return i + 1;
         }
     }
 }
